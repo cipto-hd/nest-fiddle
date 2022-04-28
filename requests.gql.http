@@ -1,0 +1,23 @@
+@api_url=http://127.0.0.1:3000/graphql
+
+###
+POST {{api_url}}
+Content-Type: application/json
+X-Request-Type: GraphQL
+Accept: application/json
+
+query {
+  sayHello
+}
+
+###
+POST {{api_url}}
+Content-Type: application/json
+X-Request-Type: GraphQL
+Accept: application/json
+
+subscription {
+  helloSaid {
+    message
+  }
+}

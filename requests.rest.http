@@ -1,0 +1,34 @@
+@api_url=http://127.0.0.1:3000
+
+###
+GET {{api_url}}/coffees
+Accept: application/json
+
+###
+GET {{api_url}}/coffees/4
+Accept: application/json
+
+###
+POST {{api_url}}/coffees
+Accept: application/json
+Content-Type: application/json
+
+{
+  "name" : "Nostalgic Coffee",
+  "brand" : "Kaotan", 
+  "flavors": [],
+  "foor": "bar"
+}
+
+###
+PATCH {{api_url}}/coffees/4?replace=true
+Accept: application/json
+Content-Type: application/json
+
+{
+  "flavors" : ["milk", "cappucino"]
+}
+
+###
+DELETE  {{api_url}}/coffees/2
+Accept: application/javascript

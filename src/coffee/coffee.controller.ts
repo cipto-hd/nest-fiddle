@@ -3,13 +3,12 @@ import {
   Controller,
   Delete,
   Get,
-  NotFoundException,
+  HttpException,
   Param,
   Patch,
   Post,
   Query,
 } from '@nestjs/common';
-import { DeleteResult, UpdateResult } from 'typeorm';
 import { CoffeeService } from './coffee.service';
 import { CreateCoffeeDto } from './dtos/create-coffee.dto';
 import { UpdateCoffeeDto } from './dtos/update-coffee.dto';
@@ -21,22 +20,19 @@ export class CoffeeController {
 
   @Get()
   async getAll(): Promise<CoffeeEntity[]> {
-    return await this.coffeeService.getAll();
+    return this.coffeeService.getAll();
   }
 
   @Get(':id')
-  async getOne(@Param('id') id: number): Promise<CoffeeEntity | any> {
-    const coffee = await this.coffeeService.getOne(id);
-    if (!coffee) return new NotFoundException();
-
-    return coffee;
+  async getOne(@Param('id') id: number): Promise<CoffeeEntity | HttpException> {
+    return this.coffeeService.getOne(id);
   }
 
   @Post()
   async create(
     @Body() createCoffeeDto: CreateCoffeeDto,
   ): Promise<CoffeeEntity> {
-    return await this.coffeeService.create(createCoffeeDto);
+    return this.coffeeService.create(createCoffeeDto);
   }
 
   @Patch(':id')
@@ -44,12 +40,12 @@ export class CoffeeController {
     @Param('id') id: number,
     @Body() updateCoffeeDto: UpdateCoffeeDto,
     @Query('replaced') replaced: boolean,
-  ): Promise<UpdateResult> {
-    return await this.coffeeService.update(id, updateCoffeeDto, replaced);
+  ): Promise<CoffeeEntity> {
+    return this.coffeeService.update(id, updateCoffeeDto, replaced);
   }
 
   @Delete(':id')
-  async delete(@Param('id') id: number): Promise<DeleteResult> {
-    return await this.coffeeService.delete(id);
+  async delete(@Param('id') id: number): Promise<CoffeeEntity> {
+    return this.coffeeService.delete(id);
   }
 }

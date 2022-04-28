@@ -15,6 +15,7 @@ import { CoffeeModule } from './coffee/coffee.module';
       database: 'nestjs_fiddle',
       username: 'root',
       password: 'bismillah',
+      autoLoadEntities: true,
       entities: [__dirname + '/**/entities/*.{ts,js}'],
       synchronize: true,
     }),

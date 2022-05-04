@@ -53,10 +53,19 @@ export class CoffeeService {
     updateCoffeeDto: UpdateCoffeeDto,
     replaced?: boolean,
   ): Promise<CoffeeEntity> {
-    let coffee = await this.getOne(id);
+    const coffee = await this.getOne(id);
+    let coffeeUpdateData: CoffeeEntity;
+    let updateCoffeeNonFlavorsDto: { name?: string; brand?: string };
+
+    if (updateCoffeeDto.name)
+      updateCoffeeNonFlavorsDto.name = updateCoffeeDto.name;
+    if (updateCoffeeDto.name)
+      updateCoffeeNonFlavorsDto.name = updateCoffeeDto.name;
 
     if (updateCoffeeDto.flavors) {
-      const flavors =
+      let flavorUpdateData: FlavorEntity[] = [{} as FlavorEntity];
+
+      flavorUpdateData =
         updateCoffeeDto.flavors &&
         (await Promise.all(
           updateCoffeeDto.flavors.map((name) =>
@@ -65,18 +74,31 @@ export class CoffeeService {
         ));
 
       if (replaced) {
-        coffee.flavors = flavors;
+        coffeeUpdateData = {
+          ...coffee,
+          flavors: flavorUpdateData,
+        } as CoffeeEntity;
       } else {
-        const intialIDs = new Set(coffee.flavors.map((flavor) => flavor.id));
-        flavors.forEach((flavor) => {
-          !intialIDs.has(flavor.id) && coffee.flavors.push(flavor);
+        let flavorMergedData: FlavorEntity[] = [{} as FlavorEntity];
+        flavorMergedData = coffee.flavors;
+
+        const intialIDs = new Set(flavorMergedData.map((flavor) => flavor.id));
+
+        flavorUpdateData.forEach((flavor) => {
+          !intialIDs.has(flavor.id) && flavorMergedData.push(flavor);
         });
+
+        coffeeUpdateData = {
+          ...coffee,
+          flavors: flavorMergedData,
+        } as CoffeeEntity;
       }
     }
 
-    coffee = await this.coffeeRepository.save(coffee);
-
-    return coffee;
+    return await this.coffeeRepository.save({
+      ...coffeeUpdateData,
+      ...updateCoffeeNonFlavorsDto,
+    } as CoffeeEntity);
   }
 
   async delete(id: number): Promise<CoffeeEntity> {

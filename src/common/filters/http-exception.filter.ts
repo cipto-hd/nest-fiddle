@@ -24,6 +24,8 @@ export class HttpExceptionFilter<T extends HttpException>
         ? { message: exceptionResponse }
         : (exceptionResponse as object);
 
+    if ((host.getType() || 'graphql') === 'graphql') throw error;
+
     response
       .status(status)
       .send({ ...error, timestamp: new Date().toISOString() });

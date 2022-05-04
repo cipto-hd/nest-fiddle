@@ -9,6 +9,7 @@ import {
   Resolver,
   Subscription,
 } from '@nestjs/graphql';
+import { IsOptional } from 'class-validator';
 import { PubSub } from 'mercurius';
 
 @ObjectType()
@@ -20,24 +21,31 @@ class GreetingOutput {
 @ArgsType()
 class MessageArg {
   @Field({ defaultValue: 'Hello Word!' })
+  @IsOptional()
   content: string;
 }
 
 @InputType()
 class MessageInput {
   @Field()
+  @IsOptional()
   content: string;
 }
 
 @Resolver()
 export class AppResolver {
   @Query(() => String)
+  check() {
+    return 'Check 123!';
+  }
+
+  @Query(() => String)
   sayHello(
     @Context('pubsub') pubSub: PubSub,
     // @Args() messageArg?: MessageArg,
     @Args({
       nullable: true,
-      name: 'message',
+      name: 'messageInput',
       defaultValue: { content: 'Hello World!' },
     })
     messageInput?: MessageInput,

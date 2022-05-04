@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  test-db:
+    image: ce6a238c473a
+    restart: always
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=bismillah
+      - POSTGRES_DB=nestjs_fiddle_test
+    container_name: test_db

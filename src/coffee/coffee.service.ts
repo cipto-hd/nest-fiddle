@@ -1,30 +1,49 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { PaginationQueryDto } from 'src/common/dtos/pagination-query.dto';
+import { EventEntity } from 'src/event/entities/event.entity';
+import { Connection } from 'typeorm';
 import { CreateCoffeeDto } from './dtos/create-coffee.dto';
 import { UpdateCoffeeDto } from './dtos/update-coffee.dto';
 import { CoffeeEntity } from './entities/coffee.entity';
+import { FlavorEntity } from './entities/flavor.entity';
 import { CoffeeRepository } from './repositories/coffee.repository';
+import { FlavorRepository } from './repositories/flavor.repository';
 
 @Injectable()
 export class CoffeeService {
   constructor(
     // @InjectRepository(CoffeeEntity)
     private readonly coffeeRepository: CoffeeRepository,
+    private readonly flavorRepository: FlavorRepository,
+    private readonly connection: Connection,
   ) {}
 
-  async getAll(): Promise<CoffeeEntity[]> {
-    return this.coffeeRepository.find();
+  async getAll(paginationQuery: PaginationQueryDto): Promise<CoffeeEntity[]> {
+    const { limit, offset } = paginationQuery;
+
+    return this.coffeeRepository.find({
+      relations: ['flavors'],
+      take: limit,
+      skip: offset,
+    });
   }
 
   async getOne(id: number): Promise<CoffeeEntity> {
-    const coffee = await this.coffeeRepository.findOne(id);
-    if (!coffee) throw new NotFoundException();
+    const coffee = await this.coffeeRepository.findOne(id, {
+      relations: ['flavors'],
+    });
+    if (!coffee)
+      throw new NotFoundException(`Coffee with ID #${id} was not found`);
 
     return coffee;
   }
 
   async create(createCoffeeDto: CreateCoffeeDto): Promise<CoffeeEntity> {
-    let { flavors } = createCoffeeDto;
-    flavors = flavors.map((x) => x.trim());
+    const flavors = await Promise.all(
+      createCoffeeDto.flavors.map((name) =>
+        this.preloadFlavorByName(name.trim()),
+      ),
+    );
 
     return this.coffeeRepository.save({ ...createCoffeeDto, flavors });
   }
@@ -32,20 +51,66 @@ export class CoffeeService {
   async update(
     id: number,
     updateCoffeeDto: UpdateCoffeeDto,
-    replaced: boolean,
+    replaced?: boolean,
   ): Promise<CoffeeEntity> {
-    const coffee = await this.getOne(id);
+    let coffee = await this.getOne(id);
 
-    let { flavors } = updateCoffeeDto;
-    flavors = flavors.map((x) => x.trim());
-    if (replaced) flavors = [...new Set(flavors.concat(coffee.flavors))];
+    if (updateCoffeeDto.flavors) {
+      const flavors =
+        updateCoffeeDto.flavors &&
+        (await Promise.all(
+          updateCoffeeDto.flavors.map((name) =>
+            this.preloadFlavorByName(name.trim()),
+          ),
+        ));
 
-    return this.coffeeRepository.save({ ...updateCoffeeDto, flavors });
+      if (replaced) {
+        coffee.flavors = flavors;
+      } else {
+        const intialIDs = new Set(coffee.flavors.map((flavor) => flavor.id));
+        flavors.forEach((flavor) => {
+          !intialIDs.has(flavor.id) && coffee.flavors.push(flavor);
+        });
+      }
+    }
+
+    coffee = await this.coffeeRepository.save(coffee);
+
+    return coffee;
   }
 
   async delete(id: number): Promise<CoffeeEntity> {
     const coffee = await this.getOne(id);
 
     return this.coffeeRepository.remove(coffee);
+  }
+
+  private async preloadFlavorByName(name: string): Promise<FlavorEntity> {
+    const existingFlavor = await this.flavorRepository.findOne({ name });
+    if (existingFlavor) return existingFlavor;
+
+    return this.flavorRepository.create({ name });
+  }
+
+  async recommendCoffee(coffee: CoffeeEntity) {
+    const queryRunner = this.connection.createQueryRunner();
+    queryRunner.connect();
+    queryRunner.startTransaction();
+
+    try {
+      coffee.recommendations++;
+      const recommendEvent = new EventEntity();
+      recommendEvent.name = 'recommend_event';
+      recommendEvent.type = EventEntity.name;
+      recommendEvent.payload = { coffeeId: coffee.id };
+
+      await queryRunner.manager.save(coffee);
+      await queryRunner.manager.save(recommendEvent);
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+    } finally {
+      await queryRunner.release();
+    }
   }
 }

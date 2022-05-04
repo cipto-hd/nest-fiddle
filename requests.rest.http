@@ -1,12 +1,18 @@
 @api_url=http://127.0.0.1:3000
 
+
 ###
-GET {{api_url}}/coffees
+GET {{api_url}}
 Accept: application/json
 
 ###
-GET {{api_url}}/coffees/4
+GET {{api_url}}/coffees?limit=1&offset=2
 Accept: application/json
+
+###
+GET {{api_url}}/coffees/1
+Accept: application/json
+Authorization: /S0A1Aoehx/ELgD7VdgV2ZJTQdcTby+y
 
 ###
 POST {{api_url}}/coffees
@@ -14,19 +20,18 @@ Accept: application/json
 Content-Type: application/json
 
 {
-  "name" : "Nostalgic Coffee",
+  "name" : "Miss Coffee",
   "brand" : "Kaotan", 
-  "flavors": [],
-  "foor": "bar"
+  "flavors": ["foo", "bar"]
 }
 
 ###
-PATCH {{api_url}}/coffees/4?replace=true
+PATCH {{api_url}}/coffees/1?replaced=true
 Accept: application/json
 Content-Type: application/json
 
 {
-  "flavors" : ["milk", "cappucino"]
+  "flavors" : ["cappucino","foo"]
 }
 
 ###

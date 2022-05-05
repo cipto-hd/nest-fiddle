@@ -10,7 +10,6 @@ export class AppService {
   ) /* private readonly configService: ConfigService */ {}
 
   getHello(): string {
-    console.log(this.appConfig.constructor.name);
     return 'Hello World!';
   }
 }

@@ -20,8 +20,8 @@ describe('AppController (e2e)', () => {
     await app.init();
   });
 
-  afterAll(async () => {
-    app.close();
+  afterEach(async () => {
+    await app.close();
   });
 
   it('/ (GET)', async () => {

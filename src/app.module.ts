@@ -29,12 +29,15 @@ import redis from 'mqemitter-redis';
       driver: MercuriusDriver,
       graphiql: true,
       autoSchemaFile: true,
-      subscription: {
-        emitter: redis({
-          port: 6379,
-          host: '127.0.0.1',
-        }),
-      },
+      subscription:
+        process.env.NODE_ENV === 'test'
+          ? true
+          : {
+              emitter: redis({
+                port: 6379,
+                host: '127.0.0.1',
+              }),
+            },
     }),
     CoffeeModule,
     // CommonModule,

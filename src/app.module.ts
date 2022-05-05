@@ -8,7 +8,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CoffeeModule } from './coffee/coffee.module';
 import { ConfigModule } from '@nestjs/config';
 import { AppConfig } from './config/app.config';
-import { CommonModule } from './common/common.module';
 import { getConnectionOptions } from 'typeorm';
 import { LoggingMiddleware } from './common/middlewares/logging.middleware';
 
@@ -29,7 +28,13 @@ import { LoggingMiddleware } from './common/middlewares/logging.middleware';
       driver: MercuriusDriver,
       graphiql: true,
       autoSchemaFile: true,
-      subscription: true,
+      subscription: {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        emitter: require('mqemitter-redis')({
+          port: 6379,
+          host: '127.0.0.1',
+        }),
+      },
     }),
     CoffeeModule,
     // CommonModule,

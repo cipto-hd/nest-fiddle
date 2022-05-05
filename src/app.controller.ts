@@ -1,7 +1,7 @@
 import { Controller, Get, Sse } from '@nestjs/common';
 import { interval, map, Observable } from 'rxjs';
 import { AppService } from './app.service';
-import { Protocol } from './common/decorators/protocol.decorator';
+// import { Protocol } from './common/decorators/protocol.decorator';
 import { Public } from './common/decorators/public.decorator';
 
 export interface MessageEvent {
@@ -17,10 +17,9 @@ export class AppController {
 
   @Public()
   @Get()
-  async getHello(
-    @Protocol({ role: 'boss' }) protocol: string,
-  ): Promise<string> {
-    console.log(protocol);
+  async getHello(): // @Protocol({ role: 'boss' }) protocol: string,
+  Promise<string> {
+    // console.log(protocol);
     /** For testing timeout interceptor */
     // await new Promise((resolve) => setTimeout(resolve, 5000));
     return this.appService.getHello();

@@ -10,6 +10,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AppConfig } from './config/app.config';
 import { getConnectionOptions } from 'typeorm';
 import { LoggingMiddleware } from './common/middlewares/logging.middleware';
+import redis from 'mqemitter-redis';
 
 @Module({
   imports: [
@@ -29,8 +30,7 @@ import { LoggingMiddleware } from './common/middlewares/logging.middleware';
       graphiql: true,
       autoSchemaFile: true,
       subscription: {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        emitter: require('mqemitter-redis')({
+        emitter: redis({
           port: 6379,
           host: '127.0.0.1',
         }),

@@ -1,6 +1,5 @@
 import {
   Args,
-  ArgsType,
   Context,
   Field,
   InputType,
@@ -11,6 +10,7 @@ import {
 } from '@nestjs/graphql';
 import { IsOptional } from 'class-validator';
 import { PubSub } from 'mercurius';
+import { CoffeeService } from './coffee/coffee.service';
 
 @ObjectType()
 class GreetingOutput {
@@ -18,12 +18,12 @@ class GreetingOutput {
   message: string;
 }
 
-@ArgsType()
+/* @ArgsType()
 class MessageArg {
   @Field({ defaultValue: 'Hello Word!' })
   @IsOptional()
   content: string;
-}
+} */
 
 @InputType()
 class MessageInput {
@@ -34,9 +34,22 @@ class MessageInput {
 
 @Resolver()
 export class AppResolver {
+  constructor(private readonly coffeeService: CoffeeService) {}
+
   @Query(() => String)
-  check() {
-    return 'Check 123!';
+  async check() {
+    const coffee =
+      process.env.NODE_ENV == 'test'
+        ? await this.coffeeService.create({
+            name: 'Test Coffee',
+            brand: 'Brand',
+            flavors: ['falvor01', 'flavor02'],
+          })
+        : {
+            name: 'Check Coffee',
+          };
+
+    return coffee.name;
   }
 
   @Query(() => String)

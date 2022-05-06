@@ -37,7 +37,7 @@ describe('[Feature] Coffee (e2e) - /coffeees', () => {
         TypeOrmModule.forRoot({
           type: 'postgres',
           host: 'localhost',
-          port: 5432,
+          port: 5433,
           database: 'nestjs_fiddle_test',
           username: 'postgres',
           password: 'bismillah',

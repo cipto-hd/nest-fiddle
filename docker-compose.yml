@@ -5,7 +5,7 @@ services:
     image: ce6a238c473a
     restart: always
     ports:
-      - '5432:5432'
+      - '5433:5432'
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=bismillah

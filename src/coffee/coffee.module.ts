@@ -20,5 +20,6 @@ import { FlavorRepository } from './repositories/flavor.repository';
   ],
   controllers: [CoffeeController],
   providers: [CoffeeService],
+  exports: [CoffeeService],
 })
 export class CoffeeModule {}

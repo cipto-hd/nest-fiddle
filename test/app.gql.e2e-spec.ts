@@ -11,10 +11,14 @@ import { WrapResponseInterceptor } from 'src/common/interceptors/wrap-response.i
 import { createMercuriusTestClient } from 'mercurius-integration-testing';
 import { AppModule } from 'src/app.module';
 
+const sleep = async (ms: number): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, ms));
+
 describe('AppModule GraphQL (e2e)', () => {
   let app: NestFastifyApplication;
   let testClient, subscription;
   const message = 'Salam';
+  const defaultMessage = 'Hello World!';
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -82,12 +86,13 @@ describe('AppModule GraphQL (e2e)', () => {
 
       expect(res).toEqual(expectedResponse);
       // check if string is indeed from DB
-      expect(res.data.check).toBe('Test Coffee'); //data fron DB
+      expect(res.data.check).toBe('Test Coffee'); //data I set in the DB
     });
 
     /**
-     * For subscription to work, 2 queries has to be performed
-     * Query with default message, take precedence, otherwise the last
+     * For subscription to work, we need to wait a hot second for the sub to connect, see below
+     * which message received by subscription  test, cannot be predicted
+     * therefore we expect with any string
      */
     it('Subscription', async () => {
       /** Subscribe first, subscribe for helloSaid event */
@@ -106,6 +111,8 @@ describe('AppModule GraphQL (e2e)', () => {
           });
         },
       });
+
+      await sleep(500); // we need to wait a hot second here for the sub to connect
     });
 
     it('should response with default message', async () => {
@@ -117,7 +124,7 @@ describe('AppModule GraphQL (e2e)', () => {
 
       const expectedResponse = {
         data: {
-          sayHello: 'Hello World!',
+          sayHello: defaultMessage,
         },
       };
 
@@ -134,7 +141,7 @@ describe('AppModule GraphQL (e2e)', () => {
 
       const queryOptions = {
         variables: {
-          message: message,
+          message,
         },
       };
 
